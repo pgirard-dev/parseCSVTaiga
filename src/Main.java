@@ -17,18 +17,19 @@ public class Main {
 
 	public static void main(String[] args) {
 		// loader le fichier csv
-		File scrumDump = loadCSVFile();
+		File scrumDump = getCSVFile();
 		// le charger dans une list
 		List<String[]> scrumDumpList = loadListCSV(scrumDump);
 		// le parser dans un modèle
 		TaigaCSVModel taigaModel = new TaigaCSVModel(scrumDumpList);
-		//printSingleList(taigaModel.getUsers());
-		//printSingleList(taigaModel.getSprints());
-		//printList(taigaModel.getInfoForEachSprint(""));
+		// écrire les résultats dans un fichier
 		File scrumFolder = getDumpFolder();
 		writeScrumDumps(scrumFolder, taigaModel);
 	}
 
+	/**
+	 * écrit les résultats dans un fichier pour l'équipe et pour chaque membre
+	 */
 	private static void writeScrumDumps(File scrumFolder, TaigaCSVModel taigaModel) {
 		try {
 			CSVWriter writer = new CSVWriter(new FileWriter(scrumFolder.getAbsolutePath() + "\\all.csv"));
@@ -54,6 +55,10 @@ public class Main {
 		
 	}
 
+	/**
+	 * 
+	 * @return dossier d'écriture des résultats
+	 */
 	private static File getDumpFolder() {
 		final JFileChooser fc = new JFileChooser();
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -76,7 +81,11 @@ public class Main {
 		return scrumFolder;
 	}
 
-	private static File loadCSVFile() {
+	/**
+	 * 
+	 * @return un fichier csv
+	 */
+	private static File getCSVFile() {
 		JOptionPane.showMessageDialog(null, "ATTENTION il faut enlever toutes les descriptions des tâches pour que ça fonctionne");
 		final JFileChooser fc = new JFileChooser();
 		FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV", "csv");
