@@ -1,13 +1,16 @@
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
 
 public class Main {
 	final JFileChooser fc = new JFileChooser();
@@ -18,10 +21,63 @@ public class Main {
 		// le charger dans une list
 		List<String[]> scrumDumpList = loadListCSV(scrumDump);
 		// le parser dans un modèle
-		TaigaCSVModel csvModel = new TaigaCSVModel(scrumDumpList);
+		TaigaCSVModel taigaModel = new TaigaCSVModel(scrumDumpList);
+		//printSingleList(taigaModel.getUsers());
+		//printSingleList(taigaModel.getSprints());
+		//printList(taigaModel.getInfoForEachSprint(""));
+		File scrumFolder = getDumpFolder();
+		writeScrumDumps(scrumFolder, taigaModel);
+	}
+
+	private static void writeScrumDumps(File scrumFolder, TaigaCSVModel taigaModel) {
+		try {
+			CSVWriter writer = new CSVWriter(new FileWriter(scrumFolder.getAbsolutePath() + "\\all.csv"));
+			writer.writeNext(taigaModel.getHeader());
+			for(String[] line : taigaModel.getInfoForEachSprint(null)) {
+				writer.writeNext(line);
+			}
+			writer.close();
+			
+			for(String member : taigaModel.getMembers()) {
+				CSVWriter writer1 = new CSVWriter(new FileWriter(scrumFolder.getAbsolutePath() + "\\"+ member +".csv"));
+				writer1.writeNext(taigaModel.getHeader());
+				for(String[] line : taigaModel.getInfoForEachSprint(member)) {
+					writer1.writeNext(line);
+				}
+				writer1.close();
+			}
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+
+	private static File getDumpFolder() {
+		final JFileChooser fc = new JFileChooser();
+		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		fc.setCurrentDirectory(new File("C:\\Users\\User\\Google Drive\\Projet E16\\SCRUM\\Analyse heures\\dump"));
+		File scrumFolder = null;
+		int returnVal = fc.showOpenDialog(null);
+
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			scrumFolder = fc.getSelectedFile();
+			System.out.println("writing to : " + scrumFolder.getAbsolutePath() + ".");
+		} else {
+			System.out.println("Open command cancelled by user.");
+			System.exit(1);
+		}
+
+		if (!scrumFolder.exists()) {
+			System.out.println("Le fichier n'existe pas");
+			System.exit(0);
+		}
+		return scrumFolder;
 	}
 
 	private static File loadCSVFile() {
+		JOptionPane.showMessageDialog(null, "ATTENTION il faut enlever toutes les descriptions des tâches pour que ça fonctionne");
 		final JFileChooser fc = new JFileChooser();
 		FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV", "csv");
 		fc.setFileFilter(filter);
@@ -52,7 +108,6 @@ public class Main {
 			reader = new CSVReader(new InputStreamReader(new FileInputStream(scrumDump.getAbsolutePath()), "UTF-8"),
 					',', '\n', 1);
 			myEntries = reader.readAll();
-			printList(myEntries);
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -66,5 +121,12 @@ public class Main {
 			}
 			System.out.println();
 		}
+	}
+	
+	private static void printSingleList(List<String> list) {
+		for (int i = 0; i < list.size(); i++) {
+				System.out.print(list.get(i) + ", ");
+		}
+		System.out.println();
 	}
 }
